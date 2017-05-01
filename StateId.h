@@ -78,14 +78,15 @@ enum class StateId : std::size_t
     WEST_VIRGINIA,
     WISCONSIN,
     WYOMING,
-    MAX_STATE_ID
+    PUERTO_RICO,
+    MAX_ID
 };
 
-constexpr auto MaxStateId{ static_cast<std::size_t>(StateId::MAX_STATE_ID) };
+constexpr auto MaxStateId{ static_cast<std::size_t>(StateId::PUERTO_RICO) };
 
 constexpr auto operator++(StateId& value) noexcept
 {
-    if (value != StateId::MAX_STATE_ID)
+    if (value != StateId::MAX_ID)
     {
         value = static_cast<StateId>(static_cast<uint8_t>(value) + 1);
     }
@@ -97,6 +98,11 @@ constexpr auto operator++(StateId& value, int) noexcept
     const auto oldValue{ value };
     ++value;
     return oldValue;
+}
+
+constexpr auto operator<(StateId lhs, size_t rhs) noexcept
+{
+    return static_cast<size_t>(lhs) < rhs;
 }
 
 constexpr auto GetStateName(StateId state) noexcept
@@ -203,6 +209,8 @@ constexpr auto GetStateName(StateId state) noexcept
         return "Wisconsin";
     case StateId::WYOMING:
         return "Wyoming";
+    case StateId::PUERTO_RICO:
+        return "Puerto Rico";
     default:
         return "Unknown state";
     }

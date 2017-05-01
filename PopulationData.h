@@ -29,6 +29,7 @@ SOFTWARE.
 #include <cstdint>
 #include <string>
 #include <array>
+#include "ConstexprFunctions.h"
 #include "StateId.h"
 
 /*
@@ -89,6 +90,7 @@ West Virginia            1'852'994     1'854'972     1'856'560     1'853'231    
 Wisconsin                5'686'986     5'709'640     5'726'177     5'742'854     5'758'377     5'767'891     5'778'708
 Wyoming                    563'626       567'725       576'765       582'684       583'642       586'555       585'501
 
+Puerto Rico              3'725'789     3'678'732     3'634'488     3'593'077     3'534'874     3'473'181     3'411'307
 */
 
 using PopulationEstimateYear = std::size_t;
@@ -218,6 +220,8 @@ constexpr auto BuildPopulationArray(StateId state) noexcept
         return PopulationArray{ 5'686'986, 5'709'640, 5'726'177, 5'742'854, 5'758'377, 5'767'891, 5'778'708, c_NoProjection, c_NoProjection, c_NoProjection, c_NoProjection };
     case StateId::WYOMING:
         return PopulationArray{ 563'626, 567'725, 576'765, 582'684, 583'642, 586'555, 585'501, c_NoProjection, c_NoProjection, c_NoProjection, c_NoProjection };
+    case StateId::PUERTO_RICO:
+        return PopulationArray{ 3'725'789, 3'678'732, 3'634'488, 3'593'077, 3'534'874, 3'473'181, 3'411'307, c_NoProjection, c_NoProjection, c_NoProjection, c_NoProjection };
     default:
         return PopulationArray{ c_NoProjection, c_NoProjection, c_NoProjection, c_NoProjection, c_NoProjection, c_NoProjection, c_NoProjection, c_NoProjection, c_NoProjection, c_NoProjection, c_NoProjection };
     }
@@ -288,3 +292,7 @@ constexpr StatePopulationEstimates c_statePopulationEstimates
     PopulationEstimate{ StateId::WISCONSIN },
     PopulationEstimate{ StateId::WYOMING }
 };
+
+constexpr auto c_PuertoRicoData( PopulationEstimate{ StateId::PUERTO_RICO } );
+
+constexpr auto AllPopulationData{ array_append(c_statePopulationEstimates, c_PuertoRicoData) };

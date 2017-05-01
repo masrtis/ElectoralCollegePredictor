@@ -27,14 +27,69 @@ SOFTWARE.
 #pragma once
 
 #include "PopulationData.h"
+#include <array>
 
-using RepresentativeSeats = std::array<std::int32_t, MaxStateId>;
+template <size_t NumStates>
+using RepresentativeSeats = std::array<std::int32_t, NumStates>;
 
 class ApportionSeats
 {
 public:
-    RepresentativeSeats apportion(PopulationEstimateYear year) const;
+    template <size_t NumStates>
+    auto apportion(const std::array<PopulationEstimate, NumStates>& populationEstimates, PopulationEstimateYear year) const;
 private:
-    using Priorities = std::array<std::pair<StateId, double>, MaxStateId>;
-    constexpr auto GenerateInitialPriorityValues(PopulationEstimateYear year) const;
+    template <size_t NumStates>
+    using Priorities = std::array<std::pair<StateId, double>, NumStates>;
+
+    template <size_t NumStates>
+    constexpr auto GenerateInitialPriorityValues(const std::array<PopulationEstimate, NumStates>& populationEstimates, PopulationEstimateYear year) const;
 };
+
+template <size_t NumStates>
+constexpr auto ApportionSeats::GenerateInitialPriorityValues(const std::array<PopulationEstimate, NumStates>& populationEstimates, PopulationEstimateYear year) const
+{
+    Priorities<NumStates> initialPriority;
+    auto currentStateId{ StateId::ALABAMA };
+    const auto estimateIndex{ GetPopulationArrayIndexFromYear(year) };
+    constexpr auto divisor{ 1.0 / SquareRoot(2) };
+
+    array_transform(populationEstimates, initialPriority, [&, estimateIndex, divisor](PopulationEstimate populationEstimate)
+    {
+        return std::make_pair(currentStateId++, populationEstimate.m_data[estimateIndex] * divisor);
+    });
+
+    return initialPriority;
+}
+
+template <size_t NumStates>
+auto ApportionSeats::apportion(const std::array<PopulationEstimate, NumStates>& populationEstimates, PopulationEstimateYear year) const
+{
+    RepresentativeSeats<NumStates> currentSeatCount;
+    array_fill(currentSeatCount, 1);
+
+    auto currentPriority{ GenerateInitialPriorityValues(populationEstimates, year) };
+
+    const auto priorityPredicate{ [](const auto& lhs, const auto& rhs) { return lhs.second < rhs.second; } };
+    std::make_heap(begin(currentPriority), end(currentPriority), priorityPredicate);
+    auto seatsFilled{ NumStates };
+
+    constexpr size_t totalSeats{ 435 };
+    const auto populationEstimateIndex{ GetPopulationArrayIndexFromYear(year) };
+
+    while (seatsFilled < totalSeats)
+    {
+        std::pop_heap(begin(currentPriority), end(currentPriority), priorityPredicate);
+
+        auto& nextSeat{ currentPriority.back() };
+        const auto stateIndex{ static_cast<std::size_t>(nextSeat.first) };
+        auto& stateSeatCount{ currentSeatCount[stateIndex] };
+        ++stateSeatCount;
+        nextSeat.second = populationEstimates[stateIndex].m_data[populationEstimateIndex] / std::sqrt(stateSeatCount * (stateSeatCount + 1));
+
+        std::push_heap(begin(currentPriority), end(currentPriority), priorityPredicate);
+
+        ++seatsFilled;
+    }
+
+    return currentSeatCount;
+}

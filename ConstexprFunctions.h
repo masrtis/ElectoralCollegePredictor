@@ -26,7 +26,9 @@ SOFTWARE.
 
 #pragma once
 
+#include <array>
 #include <cstdint>
+#include <tuple>
 #include <utility>
 
 constexpr double InRangeOpenHigh(double x, const std::pair<double, double>& range) noexcept
@@ -123,4 +125,33 @@ constexpr void array_fill(std::array<T, size>& dest, T element)
     {
         dest[index] = element;
     }
+}
+
+template<typename T, typename... U>
+using Array = std::array<T, 1 + sizeof...(U)>;
+
+template<typename T, typename... U, size_t... I>
+constexpr auto tuple_to_array_internal(const std::tuple<T, U...>& t, std::index_sequence<I...>)
+{
+    return Array<T, U...>{ std::get<I>(t)... };
+}
+
+template<typename T, typename... U>
+constexpr auto tuple_to_array(const std::tuple<T, U...>& t)
+{
+    using IndexTuple = std::index_sequence_for<T, U...>;
+    return tuple_to_array_internal(t, IndexTuple());
+}
+
+template <typename T, size_t size, size_t... Indices>
+constexpr auto array_to_tuple(const std::array<T, size>& source, std::index_sequence<Indices...>)
+{
+    return std::make_tuple(source[Indices]...);
+}
+
+template <typename T, size_t Size>
+constexpr auto array_append(const std::array<T, Size>& source, T nextElement)
+{
+    using ArrayIndices = std::make_index_sequence<Size>;
+    return tuple_to_array(tuple_cat(array_to_tuple(source, ArrayIndices()), std::make_tuple(std::move(nextElement))));
 }
