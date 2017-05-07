@@ -142,10 +142,10 @@ constexpr auto tuple_to_array_internal(const std::tuple<T, U...>& t, std::index_
     return Array<T, U...>{ std::get<I>(t)... };
 }
 
-template<typename T, typename... U>
-constexpr auto tuple_to_array(const std::tuple<T, U...>& t)
+template<typename... T>
+constexpr auto tuple_to_array(const std::tuple<T...>& t)
 {
-    using IndexTuple = std::index_sequence_for<T, U...>;
+    using IndexTuple = std::index_sequence_for<T...>;
     return tuple_to_array_internal(t, IndexTuple());
 }
 
