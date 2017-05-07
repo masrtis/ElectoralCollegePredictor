@@ -127,6 +127,12 @@ constexpr void array_fill(std::array<T, size>& dest, T element)
     }
 }
 
+/*
+    https://godbolt.org/g/6h7BYR - Compiler example for clang 4.0, gcc 7, and MSVC 2017 RTM
+    http://stackoverflow.com/q/37029886/1181561 - How to convert an array to a tuple
+    http://stackoverflow.com/a/10621270/1181561 - How to convert a tuple to an array
+*/
+
 template<typename T, typename... U>
 using Array = std::array<T, 1 + sizeof...(U)>;
 
